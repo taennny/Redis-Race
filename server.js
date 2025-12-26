@@ -1,17 +1,24 @@
 const express = require("express");
+const axios = require("axios");
 const app = express();
 
-app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
-app.post("/", (req, res) => {
-  res.send("KCTF{ssrf_render_flag}");
-});
+app.get("/", async (req, res) => {
+  const targetUrl = req.query.url;
 
-app.get("/", (req, res) => {
-  res.send("SSRF server is running");
+  if (!targetUrl) {
+    return res.status(400).send("Missing url parameter");
+  }
+
+  try {
+    const response = await axios.get(targetUrl);
+    res.send(response.data);
+  } catch (err) {
+    res.status(500).send("Request failed: " + err.message);
+  }
 });
 
 app.listen(process.env.PORT || 3000, () => {
-  console.log("Server running");
+  console.log("SSRF relay server running");
 });
